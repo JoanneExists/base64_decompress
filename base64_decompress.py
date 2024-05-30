@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import bz2
 import gzip
 import shutil
+import base64
 import tarfile
 import argparse as ap
 from subprocess import check_output
+
+# reverts from base64 encoding
+def undo_base64(file):
+    with open(file, 'rb') as in_file:
+        with open('data', 'wb') as out_file:
+            base64.decode(in_file, out_file)
+    os.rename('data', file)
+
 # untars a tar archive
 def untar(file):
     with tarfile.open(file, 'r') as in_file:
@@ -68,8 +78,12 @@ def check_file_type(file):
                     print("password found.")
                     read_contents(file, fl)
                     done = True
+                elif re.search('([A-Za-z0-9+/=])+', fl) and not re.search('([, | .])+', fl):
+                    print('found base64 file!')
+                    undo_base64(file)
                 else:
-                    print("neither found.")
+                    print("Nothing matches.")
+                    done = True
 # function to test if file exists
 def check_file_exists(file):
     if file is None  or not os.path.isfile(file):
