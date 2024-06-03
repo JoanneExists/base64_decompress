@@ -49,7 +49,7 @@ def read_contents(file, first_line):
     print(first_line.encode('utf-8'))
 
 # checks what type of file the input is and continues accordingly
-def check_file_type(file):
+def check_file_type(file, keyword):
     done = False
     i = 0
     while not done:
@@ -74,8 +74,8 @@ def check_file_type(file):
                 fl = f.readline()
                 if "00000000" in fl:
                     hexdump_reverse(file)
-                elif "password" in fl:
-                    print("password found.")
+                elif keyword in fl:
+                    print("keyword found.")
                     read_contents(file, fl)
                     done = True
                 elif re.search('([A-Za-z0-9+/=])+', fl) and not re.search('([, | .])+', fl):
@@ -97,12 +97,13 @@ def create_parser():
     # adding flags
     p.add_argument('-f', action='store', dest='file', type=str,
                     help="Absolute path to the file to be processed.")
+    p.add_argument('-k', action='store', dest='keyword', type=str, help='keyword to look for in ASCII text file.')
     return p.parse_args()
 
 def main():
     args = create_parser()
     check_file_exists(args.file)
-    check_file_type(args.file)
+    check_file_type(args.file, args.keyword)
 
 if __name__== '__main__':
     main()
